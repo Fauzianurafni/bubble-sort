@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Program Bubble Sort</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css')}}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Program Bubble Sort</h1>
+        <form action="/proses" method="post" id="bubble-sort-form">
+            <div class="form-group">
+                <label for="n">Masukkan banyaknya data:</label>
+                <input type="number" id="n" name="n" required>
+            </div>
+
+            <div id="data-fields">
+                <!-- Area untuk memasukkan data secara dinamis -->
+            </div>
+            
+            <input type="submit" value="Urutkan" id="sort-button" style="display:none; margin-top: 10px;">
+ 
+            <button type="button" onclick="addDataField()">Tambah Data</button><br><br>
+
+        </form>
+
+        <div id="hasil" class="result-display" style="display:none;">
+            {% if hasil %}
+            <div class="result-card">
+                <h2>Hasil Bubble Sort</h2>
+                <div class="result">
+                    <p><strong>Angka Sebelum diurutkan:</strong> {{ hasil['data_sebelum']|join(', ') }}</p>
+                    <p><strong>Angka Setelah diurutkan:</strong> {{ hasil['sorted_data']|join(', ') }}</p>
+                </div>
+                <!-- <button onclick="addDataField()">Kembali</button> -->
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function addDataField() {
+            const n = document.getElementById('n').value;
+            const dataFields = document.getElementById('data-fields');
+            const sortButton = document.getElementById('sort-button');
+            const hasilDiv = document.getElementById('hasil');
+            const addButton = document.querySelector('button[type="button"]');
+            
+            dataFields.innerHTML = '';
+
+            for (let i = 1; i <= n; i++) {
+                dataFields.innerHTML += `<div class="form-group">
+                                             <label for="data${i}">Data Ke-${i}:</label>
+                                             <input type="number" id="data${i}" name="data${i}" required>
+                                         </div>`;
+            }
+            
+            addButton.style.display = 'none';
+
+            if (n > 0) {
+                sortButton.style.display = 'block';
+            } else {
+                sortButton.style.display = 'none';
+            }
+
+            hasilDiv.style.display = 'none';
+        }
+
+        function ulangiInput() {
+            const hasilDiv = document.getElementById('hasil');
+            const formDiv = document.getElementById('bubble-sort-form');
+            const dataFields = document.getElementById('data-fields');
+            const addButton = document.querySelector('button[type="button"]');
+            
+            hasilDiv.innerHTML = '';
+
+            formDiv.style.display = 'block';
+            dataFields.innerHTML = ''; 
+            addButton.style.display = 'block'; 
+            
+            const sortButton = document.getElementById('sort-button');
+            sortButton.style.display = 'none'; 
+        }
+
+        // Tampilkan hasil setelah form disubmit
+        const form = document.getElementById('bubble-sort-form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            
+            const n = parseInt(document.getElementById('n').value);
+            const dataBeforeSort = [];
+            for (let i = 1; i <= n; i++) {
+                const value = parseInt(document.getElementById('data' + i).value);
+                dataBeforeSort.push(value);
+            }
+            
+            const sortedData = bubbleSort([...dataBeforeSort]); 
+            
+            // Memasukkan data sebelum dan setelah diurutkan ke dalam form hasil
+            const hasilDiv = document.getElementById('hasil');
+            hasilDiv.style.display = 'block';
+
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result-card';
+            resultDiv.innerHTML = `
+                <h2>Hasil Bubble Sort</h2>
+                <div class="result">
+                    <p><strong>Angka Sebelum diurutkan:</strong> ${dataBeforeSort.join(', ')}</p>
+                    <p><strong>Angka Setelah diurutkan:</strong> ${sortedData.join(', ')}</p>
+                </div>
+            `;
+            
+            const backButton = document.createElement('button');
+            backButton.textContent = 'Ulangi';
+            backButton.onclick = function() {
+                ulangiInput();
+            };
+            resultDiv.appendChild(backButton);
+
+            hasilDiv.innerHTML = ''; // Kosongkan hasil sebelumnya
+            hasilDiv.appendChild(resultDiv);
+
+            // Menyimpan data sebelum dan setelah diurutkan ke dalam form
+            const dataBeforeSortInput = document.createElement('input');
+            dataBeforeSortInput.type = 'hidden';
+            dataBeforeSortInput.name = 'data_sebelum';
+            dataBeforeSortInput.value = JSON.stringify(dataBeforeSort);
+            form.appendChild(dataBeforeSortInput);
+
+            const sortedDataInput = document.createElement('input');
+            sortedDataInput.type = 'hidden';
+            sortedDataInput.name = 'sorted_data';
+            sortedDataInput.value = JSON.stringify(sortedData);
+            form.appendChild(sortedDataInput);
+            
+            const formData = new FormData(form);
+            const serializedData = {};
+            for (const [key, value] of formData.entries()) {
+                serializedData[key] = value;
+            }
+            console.log('Data yang dikirim:', serializedData);
+            
+        });
+        
+        // Algoritma bubble sort
+        function bubbleSort(arr) {
+            const len = arr.length;
+            for (let i = 0; i < len; i++) {
+                for (let j = 0; j < len - 1 - i; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        // Swap
+                        const temp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = temp;
+                    }
+                }
+            }
+            return arr;
+        }
+    </script>
+</body>
+
+</html>
